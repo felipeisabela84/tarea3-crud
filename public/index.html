@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Gestor de Tareas</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+  h1 { color: #2c3e50; }
+  form { display: flex; gap: 8px; margin-bottom: 20px; }
+  input { flex: 1; padding: 8px; }
+  button { padding: 8px 12px; cursor: pointer; }
+  ul { list-style: none; padding: 0; }
+  li { display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid #ddd; margin-bottom: 6px; border-radius: 4px; }
+  li.done span.title { text-decoration: line-through; color: #888; }
+  .title { flex: 1; }
+  .desc { color: #666; font-size: 0.9em; }
+  .actions button { margin-left: 4px; }
+</style>
+</head>
+<body>
+  <h1>Gestor de Tareas</h1>
+
+  <form id="taskForm">
+    <input type="text" id="title" placeholder="Título" required>
+    <input type="text" id="description" placeholder="Descripción">
+    <button type="submit">Agregar</button>
+  </form>
+
+  <ul id="taskList"></ul>
+
+  <script>
+    const API = '/tasks';
+
+    async function loadTasks() {
+      const res = await fetch(API);
+      const tasks = await res.json();
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+      tasks.forEach(task => {
+        const li = document.createElement('li');
+        if (task.completed) li.classList.add('done');
+        li.innerHTML = `
+          <span class="title">${task.title}</span>
+          <span class="desc">${task.description || ''}</span>
+          <span class="actions">
+            <button onclick="toggleDone(${task.id}, ${!task.completed})">${task.completed ? 'Reabrir' : 'Completar'}</button>
+            <button onclick="deleteTask(${task.id})">Eliminar</button>
+          </span>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    document.getElementById('taskForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('title').value;
+      const description = document.getElementById('description').value;
+      await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description })
+      });
+      e.target.reset();
+      loadTasks();
+    });
+
+    async function toggleDone(id, completed) {
+      await fetch(`${API}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed })
+      });
+      loadTasks();
+    }
+
+    async function deleteTask(id) {
+      await fetch(`${API}/${id}`, { method: 'DELETE' });
+      loadTasks();
+    }
+
+    loadTasks();
+  </script>
+</body>
+</html>
