@@ -18,7 +18,7 @@ app.post('/tasks', (req, res) => {
     title,
     description,
     completed: false,
-    createdAt: new Date().toString()
+    createdAt: new Date().toISOString()
   };
   tasks.push(newTask);
   res.status(201).json(newTask);
