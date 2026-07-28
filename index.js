@@ -24,6 +24,16 @@ app.post('/tasks', (req, res) => {
   res.status(201).json(newTask);
 });
 
+app.get('/tasks', (req, res) => {
+  res.json(tasks);
+});
+
+app.get('/tasks/:id', (req, res) => {
+  const task = tasks.find(t => t.id === parseInt(req.params.id));
+  if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+  res.json(task);
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
